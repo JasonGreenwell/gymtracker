@@ -8,8 +8,10 @@ import datetime
 import sqlite3
 from matplotlib import style
 from tracker_reporting import *
+import logging
 
 
+logging.basicConfig(filename='app.log', level=logging.INFO)
 style.use('fivethirtyeight')
 todays_date = datetime.date.today()
 timedelta = datetime.timedelta(days=6)
@@ -105,26 +107,26 @@ class GymTracker:
 
     # AD##
     def onClick_ad(self, event=None):
-        ad.set(ad.get() + 1)
-        print("AD #'s-" + str(ad.get()))
-        pygame.mixer.music.load(assets_folder + "Whistle-noise.mp3")
-        pygame.mixer.music.play(0)
+        #ad.set(ad.get() + 1)
+        #print("AD #'s-" + str(ad.get()))
+        #pygame.mixer.music.load(assets_folder + "Whistle-noise.mp3")
+        #pygame.mixer.music.play(0)
         self.save_db("Active Duty")
 
     # Civ##
     def onClick_civ(self, event=None):
-        civ.set(civ.get() + 1)
-        print("Civilian #'s-" + str(civ.get()))
-        pygame.mixer.music.load(assets_folder + "Retro.mp3")
-        pygame.mixer.music.play(0)
+        #civ.set(civ.get() + 1)
+        #print("Civilian #'s-" + str(civ.get()))
+        #pygame.mixer.music.load(assets_folder + "Retro.mp3")
+        #pygame.mixer.music.play(0)
         self.save_db("Civilian")
 
     # Retired##
     def onClick_ret(self, event=None):
-        ret.set(ret.get() + 1)
-        print("Retired #'s-" + str(ret.get()))
-        pygame.mixer.music.load(assets_folder + "Wrong-number.mp3")
-        pygame.mixer.music.play(0)
+        #ret.set(ret.get() + 1)
+        #print("Retired #'s-" + str(ret.get()))
+        #pygame.mixer.music.load(assets_folder + "Wrong-number.mp3")
+        #pygame.mixer.music.play(0)
         self.save_db("Retired")
 
     def onClick_show_report(self, event=None):
@@ -134,7 +136,7 @@ class GymTracker:
         try:
             db = sqlite3.connect("tracker.db")
         except sqlite3.OperationalError as oe:
-            print(f"Could not connect to database{db}: {oe}")
+            logging.error(f"Error occurred at onClick_show_report: {oe}")
         cur = db.cursor()
 
         # Create table if it does not exist
@@ -146,8 +148,3 @@ class GymTracker:
         cur.execute(f'INSERT INTO count VALUES (DATE(\'now\', \'localtime\'), TIME(\'now\', \'localtime\'), "{category}")')
         db.commit()
         db.close()
-
-
-tracker = GymTracker()
-tracker.gui()
-
