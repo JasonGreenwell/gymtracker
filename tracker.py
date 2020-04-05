@@ -6,12 +6,11 @@ import pygame.mixer
 import pygame
 import datetime
 import sqlite3
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from dateutil import parser
 from matplotlib import style
-style.use('fivethirtyeight')
+from tracker_reporting import *
 
+
+style.use('fivethirtyeight')
 todays_date = datetime.date.today()
 timedelta = datetime.timedelta(days=6)
 date1 = todays_date
@@ -24,6 +23,7 @@ assets_folder = "Assets/"
 class GymTracker:
 
     def __init__(self):
+        self.report = Reporting()
         pass
 
     def gui(self):
@@ -80,8 +80,9 @@ class GymTracker:
         ## Insert email address you would like to send to
         toaddrs = ['email@email.com']
         SUBJECT = "Totals for " + str(day2) + " -- " + str(day1)
-        TEXT = ','.join(["AD #'s-" + str(ad.get()) + '\n' + "Civ #'s-" + str(civ.get())
-                         + '\n' + "Ret #'s -" + str(ret.get())])
+        # TEXT = ','.join(["AD #'s-" + str(ad.get()) + '\n' + "Civ #'s-" + str(civ.get())
+        #                  + '\n' + "Ret #'s -" + str(ret.get())])
+        TEXT = self.report.get_report(7)
         msg = 'Subject: {}\n\n{}'.format(SUBJECT, TEXT)
         ## Credentials (if needed)
         ## I used gmail so setup below is for gmail
@@ -104,27 +105,30 @@ class GymTracker:
 
     # AD##
     def onClick_ad(self, event=None):
-        #ad.set(ad.get() + 1)
-        #print("AD #'s-" + str(ad.get()))
-        #pygame.mixer.music.load(assets_folder + "Whistle-noise.mp3")
-        #pygame.mixer.music.play(0)
+        ad.set(ad.get() + 1)
+        print("AD #'s-" + str(ad.get()))
+        pygame.mixer.music.load(assets_folder + "Whistle-noise.mp3")
+        pygame.mixer.music.play(0)
         self.save_db("Active Duty")
 
     # Civ##
     def onClick_civ(self, event=None):
-        #civ.set(civ.get() + 1)
-        #print("Civilian #'s-" + str(civ.get()))
-        #pygame.mixer.music.load(assets_folder + "Retro.mp3")
-        #pygame.mixer.music.play(0)
+        civ.set(civ.get() + 1)
+        print("Civilian #'s-" + str(civ.get()))
+        pygame.mixer.music.load(assets_folder + "Retro.mp3")
+        pygame.mixer.music.play(0)
         self.save_db("Civilian")
 
     # Retired##
     def onClick_ret(self, event=None):
-        #ret.set(ret.get() + 1)
-        #print("Retired #'s-" + str(ret.get()))
-        #pygame.mixer.music.load(assets_folder + "Wrong-number.mp3")
-        #pygame.mixer.music.play(0)
+        ret.set(ret.get() + 1)
+        print("Retired #'s-" + str(ret.get()))
+        pygame.mixer.music.load(assets_folder + "Wrong-number.mp3")
+        pygame.mixer.music.play(0)
         self.save_db("Retired")
+
+    def onClick_show_report(self, event=None):
+        self.report.show_chart()
 
     def save_db(self, category):
         try:
@@ -144,54 +148,6 @@ class GymTracker:
         db.close()
 
 
-class Reporting:
+tracker = GymTracker()
+tracker.gui()
 
-    def __init__(self):
-        try:
-            self.db = sqlite3.connect("tracker.db")
-        except sqlite3.OperationalError as oe:
-            print(f"Could not connect to database{self.db}: {oe}")
-        self.cur = self.db.cursor()
-
-        self.active_duty_numbers = 0
-        self.civilian_numbers = 0
-        self.retiree_numbers = 0
-
-    def get_report(self, days):
-
-        active_duty = f'SELECT COUNT(*) FROM count WHERE dt_date BETWEEN DATE(\'now\', \'localtime\', \'-{days} day\'' \
-                      f') AND DATE(\'now\', \'localtime\') AND category is \'Active Duty\''
-        civilian = f'SELECT COUNT(*) FROM count WHERE dt_date BETWEEN DATE(\'now\', \'localtime\', \'-{days} day\'' \
-                   f') AND DATE(\'now\', \'localtime\') AND category is \'Active Duty\''
-        retirees = f'SELECT COUNT(*) FROM count WHERE dt_date BETWEEN DATE(\'now\', \'localtime\', \'-{days} day\'' \
-                   f') AND DATE(\'now\', \'localtime\') AND category is \'Active Duty\''
-
-        self.active_duty_numbers = self.cur.execute(active_duty).fetchone()[0]
-        self.civilian_numbers = self.cur.execute(civilian).fetchone()[0]
-        self.retiree_numbers = self.cur.execute(retirees).fetchone()[0]
-
-        self.db.close()
-
-        return f'Last {days} days:\n' \
-               f'Active Duty: {self.active_duty_numbers}\nCivilian: {self.civilian_numbers}\nRetirees: {self.retiree_numbers}' \
-               f'\nTotal: {self.active_duty_numbers + self.civilian_numbers + self.retiree_numbers}'
-
-
-    def show_chart(self):
-        # TODO: Clean Up Chart
-
-        self.cur.execute('SELECT dt_date, category, count(*) FROM count  GROUP BY dt_date, category ')
-        data = self.cur.fetchall()
-        print(data)
-
-        cat = []
-        date = []
-        total = []
-
-        for row in data:
-            cat.append(row[0])
-            date.append(row[1])
-            total.append(row[2])
-
-        plt.plot_date(cat, total, date, '-')
-        plt.show()

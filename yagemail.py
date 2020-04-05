@@ -2,6 +2,9 @@
 import yagmail
 # from counter_backup.py import tdip
 import datetime
+from tracker_reporting import *
+
+report = Reporting()
 todays_date = datetime.date.today()
 timedelta = datetime.timedelta(days=6)
 date1 = todays_date
