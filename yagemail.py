@@ -2,7 +2,7 @@
 import yagmail
 # from counter_backup.py import tdip
 import datetime
-from tracker_reporting import *
+from gym_reporting import *
 
 report = Reporting()
 todays_date = datetime.date.today()

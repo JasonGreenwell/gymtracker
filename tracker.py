@@ -1,4 +1,5 @@
 import tkinter
+import _tkinter
 import tkinter.font
 from tkinter import *
 import smtplib
@@ -7,7 +8,7 @@ import pygame
 import datetime
 import sqlite3
 from matplotlib import style
-from tracker_reporting import *
+from gym_reporting import *
 import logging
 
 
@@ -30,8 +31,9 @@ class GymTracker:
 
     def gui(self):
 
+
         root = tkinter.Tk()
-        root.wm_attributes('-alpha', '0.0')
+        #root.wm_attributes('-alpha', '0.0')
         root.wm_attributes('-fullscreen', True)
         filename = PhotoImage(file=assets_folder + "gym9.png")
         background_label = Label(root, image=filename)
@@ -74,7 +76,7 @@ class GymTracker:
                        relief=FLAT, bd=0, highlightthickness=0, highlightcolor="#A00004", cursor="none",
                        activeforeground='white', activebackground='#A00004', height=1, width=3).place(x=1370, y=925)
 
-        mainloop()
+        root.mainloop()
 
     def email(self):
         ## Insert email address you would like to mail from
@@ -109,8 +111,8 @@ class GymTracker:
     def onClick_ad(self, event=None):
         #ad.set(ad.get() + 1)
         #print("AD #'s-" + str(ad.get()))
-        #pygame.mixer.music.load(assets_folder + "Whistle-noise.mp3")
-        #pygame.mixer.music.play(0)
+        pygame.mixer.music.load(assets_folder + "Whistle-noise.mp3")
+        pygame.mixer.music.play(0)
         self.save_db("Active Duty")
 
     # Civ##
@@ -148,3 +150,7 @@ class GymTracker:
         cur.execute(f'INSERT INTO count VALUES (DATE(\'now\', \'localtime\'), TIME(\'now\', \'localtime\'), "{category}")')
         db.commit()
         db.close()
+
+tracker = GymTracker()
+
+tracker.gui()
