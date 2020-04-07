@@ -113,13 +113,13 @@ class App:
 
     def email(self):
 
-        fromaddr = 'jasondgreenwell@gmail.com'
-        toaddr = ['jason.greenwell@outlook.com']
+        fromaddr = ''
+        toaddr = ['']
         SUBJECT = "Totals for "
         TEXT = f'{self.get_report(1)}\n\n{self.get_report(7)}\n\n{self.get_report(14)}'
         msg = 'Subject: {}\n\n{}'.format(SUBJECT, TEXT)
-        username = 'jasondgreenwell@gmail.com'
-        password = 'yzuvbpvxuyptujgn'
+        username = '@gmail.com'
+        password = ''
         server = smtplib.SMTP('smtp.gmail.com:587')
 
         try:
