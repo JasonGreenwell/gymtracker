@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from tkinter import *
 from tkinter.filedialog import askdirectory
 import tkinter.font

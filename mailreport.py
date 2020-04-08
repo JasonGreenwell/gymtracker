@@ -1,9 +1,6 @@
 #! /usr/bin/env python3
 import yagmail
 import sqlite3
-import logging
-import datetime
-from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -11,10 +8,10 @@ db = sqlite3.connect("tracker.db")
 cur = db.cursor()
 
 def main():
-    username = 'jasondgreenwell@gmail.com'
-    password = 'ffeqtrxgrnvfexmi'
-    to_address = 'jason.greenwell@outlook.com'
-    subject = 'Today\'s Report'
+    username = '@gmail.com'
+    password = ''
+    to_address = ''
+    subject = 'Today\'s Gym Patron Report'
     message = f'{get_report(1)}\n\n{get_report(7)}\n\n{get_report(14)}'
     get_chart()
     attachments = 'gymtracker.pdf'
