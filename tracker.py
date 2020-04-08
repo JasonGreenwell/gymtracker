@@ -132,7 +132,7 @@ class GymTracker:
         self.save_db("Retired")
 
     def onClick_show_report(self, event=None):
-        self.report.show_chart()
+        self.report.get_chart()
 
     def save_db(self, category):
         try:

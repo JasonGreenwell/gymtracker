@@ -11,9 +11,11 @@ import smtplib
 from tkinter.messagebox import showinfo
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 class App:
 
-    folder_location = "" # Future static var for location of database for multiple apps
+    # Static variables
+    folder_location = ""  # Future static var for location of database for multiple apps
     logging.basicConfig(filename='app.log', level=logging.INFO)
 
     def __init__(self, master):
@@ -228,7 +230,7 @@ def main():
     app = App(root)
 
     # Settings
-    root.state('zoomed') #root.attributes("-fullscreen", True) for linux
+    root.state('zoomed')  # root.attributes("-fullscreen", True) for linux
     root.title('Awesome Gym Counter')
 
     # Start GUI
