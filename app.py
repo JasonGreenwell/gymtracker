@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from tkinter import *
 from tkinter.filedialog import askdirectory
 import tkinter.font
@@ -9,11 +10,13 @@ import pygame.mixer
 import pygame
 import smtplib
 from tkinter.messagebox import showinfo
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class App:
 
-    folder_location = "" # Future static var for location of database for multiple apps
+    # Static variables
+    folder_location = ""  # Future static var for location of database for multiple apps
     logging.basicConfig(filename='app.log', level=logging.INFO)
 
     def __init__(self, master):
@@ -38,20 +41,23 @@ class App:
         self.cur = self.db.cursor()
 
         # Set Fonts
-        myFont = tkinter.font.Font(family='Helvetica', size=48, weight='bold')
+        default_font = tkinter.font.Font(family='Helvetica', size=48, weight='bold')
 
         # Buttons
-        self.btn_adres = Button(master, text="0", command=lambda: self.onclick_ad(), font=myFont, bg='#003B74', fg='white',
-               relief=FLAT, bd=0, highlightthickness=0, highlightcolor="#003B74", cursor="none",
-               activeforeground='white', activebackground='#003B74', height=1, width=3)
+        self.btn_adres = Button(master, text="0", command=lambda: self.onclick_ad(), font=default_font,
+                                bg='#003B74', fg='white', relief=FLAT, bd=0, highlightthickness=0,
+                                highlightcolor="#003B74", cursor="none",activeforeground='white',
+                                activebackground='#003B74', height=1, width=3)
 
-        self.btn_civ = Button(master, text="0", command=lambda: self.onclick_civ(), font=myFont, bg='#328400', fg='white',
-                relief=FLAT, bd=0, highlightthickness=0, highlightcolor="#328400", cursor="none",
-                activeforeground='white', activebackground='#328400', height=1, width=3)
+        self.btn_civ = Button(master, text="0", command=lambda: self.onclick_civ(), font=default_font,
+                              bg='#328400', fg='white', relief=FLAT, bd=0, highlightthickness=0,
+                              highlightcolor="#328400", cursor="none", activeforeground='white',
+                              activebackground='#328400', height=1, width=3)
 
-        self.btn_ret = Button(master, text="0", command=lambda: self.onclick_ret(), font=myFont, bg='#A00004', fg='white',
-                relief=FLAT, bd=0, highlightthickness=0, highlightcolor="#A00004", cursor="none",
-                activeforeground='white', activebackground='#A00004', height=1, width=3)
+        self.btn_ret = Button(master, text="0", command=lambda: self.onclick_ret(), font=default_font,
+                              bg='#A00004', fg='white', relief=FLAT, bd=0, highlightthickness=0,
+                              highlightcolor="#A00004", cursor="none", activeforeground='white',
+                              activebackground='#A00004', height=1, width=3)
 
         # Background Image
         self.filename = PhotoImage(file="Assets/gym9.png")
@@ -59,7 +65,7 @@ class App:
 
         # Menu Bar
         self.menubar = Menu(master)
-        self.filemenu = Menu(self.menubar, relief=FLAT, font=myFont, tearoff=0)
+        self.filemenu = Menu(self.menubar, relief=FLAT, font=default_font, tearoff=0)
         self.filemenu.add_command(label="Show Report", command=self.show_chart)
         self.filemenu.add_command(label="E-Mail", command=self.email)
         self.filemenu.add_command(label="Quit", command=master.destroy)
@@ -74,6 +80,11 @@ class App:
         self.btn_adres.place(x=100, y=925)
         self.btn_civ.place(x=747, y=925)
         self.btn_ret.place(x=1370, y=925)
+
+        # Start reset everyday at midnight
+        self.sched = BackgroundScheduler()
+        self.sched.add_job(self.reset, trigger='cron', hour=0, minute=0)
+        self.sched.start()
 
     def onclick_ad(self):
         # Save to database
@@ -103,7 +114,7 @@ class App:
         # Save to database
         self.save_db("Retired")
 
-        # Increment civilian numbers and update display
+        # Increment retiree numbers and update display
         self.ret_num += 1
         self.btn_ret.configure(text=self.ret_num)
 
@@ -168,19 +179,19 @@ class App:
 
     def show_chart(self):
 
-        data = pd.read_sql_query(
+        ad_data = pd.read_sql_query(
             'SELECT dt_date as Date, category as Category, count(*) as Count FROM count WHERE category IS '
             '\'Active Duty\' GROUP BY dt_date, category ', self.db)
-        data2 = pd.read_sql_query(
+        civ_data = pd.read_sql_query(
             'SELECT dt_date as Date, category as Category, count(*) as Count FROM count WHERE category IS '
             '\'Civilian\' GROUP BY dt_date, category ', self.db)
-        data3 = pd.read_sql_query(
+        ret_data = pd.read_sql_query(
             'SELECT dt_date as Date, category as Category, count(*) as Count FROM count WHERE category IS '
             '\'Retired\' GROUP BY dt_date, category ', self.db)
 
-        plt.plot(data.Date, data.Count, '-', label='Active Duty')
-        plt.plot(data2.Date, data2.Count, '-', label='Civilian')
-        plt.plot(data3.Date, data3.Count, '-', label='Retirees')
+        plt.plot(ad_data.Date, ad_data.Count, '-', label='Active Duty')
+        plt.plot(civ_data.Date, civ_data.Count, '-', label='Civilian')
+        plt.plot(ret_data.Date, ret_data.Count, '-', label='Retirees')
         plt.xlabel('Date')
         plt.ylabel('Number')
         plt.gcf().canvas.set_window_title('Gym Tracker (BETA)')
@@ -202,6 +213,17 @@ class App:
         :return: None
         """
         self.db.close()
+        self.sched.shutdown()
+
+    def reset(self):
+
+        self.ad_num = 0
+        self.civ_num = 0
+        self.ret_num = 0
+
+        self.btn_adres.configure(text=self.ad_num)
+        self.btn_civ.configure(text=self.civ_num)
+        self.btn_ret.configure(text=self.ret_num)
 
 
 def main():
@@ -209,7 +231,7 @@ def main():
     app = App(root)
 
     # Settings
-    root.state('zoomed') #root.attributes("-fullscreen", True) for linux
+    root.state('zoomed')  # root.attributes("-fullscreen", True) for linux
     root.title('Awesome Gym Counter')
 
     # Start GUI
